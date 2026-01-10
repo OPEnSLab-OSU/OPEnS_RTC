@@ -1145,3 +1145,28 @@ void RTC_DS3231::forceConversion(void) {
 		} while ((value & 0b00100000) != 0);
 } 
  
+/**************************************************************************
+    This method checks whether the alarm, specified by the number passed into
+    it, has been triggered.
+
+    returns true if the alarm has been triggered, false otherwise
+
+    will fail if alarm_num is not 1 or 2 or if there is an I2C error
+/**************************************************************************/
+bool RTC_DS3231::alarmFired(uint8_t alarm_num) {
+
+    if(alarm_num < 1 || alarm_num > 2) return false;
+
+    uint8_t value;
+
+    Wire.beginTransmission(DS3231_ADDRESS);
+    Wire.write(DS3231_STATUSREG);
+    Wire.endTransmission();
+    Wire.requestFrom((uint8_t)DS3231_ADDRESS, (uint8_t)1);
+
+    if (!Wire.available()) return false;
+
+    value = Wire._I2C_READ();
+
+    return (value >> (alarm_num - 1)) & 0x1;
+}
